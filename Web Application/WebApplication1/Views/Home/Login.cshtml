@@ -1,0 +1,147 @@
+﻿@model WebApplication1.Models.LoginViewModel
+@{
+    ViewData["Title"] = "Login";
+}
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+<style>
+    body {
+        background: linear-gradient(135deg, #4facfe, #10a37f);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .login-card {
+        width: 28rem;
+        background: #fff;
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        transition: transform 0.2s ease-in-out;
+        animation: fadeIn 0.6s ease-in-out;
+    }
+
+        .login-card:hover {
+            transform: translateY(-5px);
+        }
+
+    .login-title {
+        font-weight: bold;
+        font-size: 1.5rem;
+        text-align: center;
+        margin-bottom: 1rem;
+        color: #333;
+    }
+
+    .form-label {
+        font-weight: 500;
+        color: #333;
+    }
+
+    .form-control {
+        border-radius: 12px;
+        padding: 10px 15px;
+        border: 1px solid #ccc;
+        transition: all 0.2s ease-in-out;
+    }
+
+        .form-control:focus {
+            border-color: #4facfe;
+            box-shadow: 0 0 5px rgba(79, 172, 254, 0.5);
+        }
+
+    .btn-login {
+        background: linear-gradient(45deg, #4facfe, #00f2fe);
+        border: none;
+        border-radius: 12px;
+        padding: 12px;
+        font-weight: 600;
+        font-size: 1rem;
+        color: white;
+        box-shadow: 0 5px 15px rgba(79, 172, 254, 0.4);
+        transition: all 0.3s ease-in-out;
+    }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 242, 254, 0.5);
+        }
+
+    .extra-links {
+        text-align: center;
+        margin-top: 15px;
+    }
+
+        .extra-links a {
+            color: #4facfe;
+            text-decoration: none;
+            font-size: 0.95rem;
+        }
+
+            .extra-links a:hover {
+                text-decoration: underline;
+            }
+
+    @@keyframes fadeIn {
+        from
+
+    {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    }
+</style>
+
+<div class="login-card">
+    <h3 class="login-title">
+        <i class="fa-solid fa-user-lock me-2"></i> Login to MediQ - HealthCare AI Assistant
+    </h3>
+    <form asp-controller="Home" asp-action="Login" method="post">
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+        <!-- Email -->
+        <div class="form-group mb-3">
+            <label for="Email" class="form-label">
+                <i class="fa-solid fa-envelope me-1"></i> Email
+            </label>
+            <input asp-for="Email" class="form-control" placeholder="Enter your email" />
+            <span asp-validation-for="Email" class="text-danger"></span>
+        </div>
+
+        <!-- Password -->
+        <div class="form-group mb-4">
+            <label for="Password" class="form-label">
+                <i class="fa-solid fa-lock me-1"></i> Password
+            </label>
+            <input asp-for="Password" class="form-control" type="password" placeholder="Enter your password" />
+            <span asp-validation-for="Password" class="text-danger"></span>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" class="btn btn-login w-100">
+            <i class="fa-solid fa-right-to-bracket me-1"></i> Login
+        </button>
+
+        <!-- Links -->
+        <div class="extra-links mt-3">
+            <a href="/Home/Register">Create an account</a> |
+            <a href="/Account/ForgotPassword">Forgot password?</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

@@ -1,0 +1,757 @@
+@{
+    ViewData["Title"] = "Chat";
+    Layout = "_ChatLayout";
+}
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+<style>
+    :root {
+        --sidebar-bg: #202123;
+        --sidebar-hover: #2a2b2e;
+        --sidebar-text: #ececf1;
+        --main-bg: #ffffff;
+        --user-bg: #10a37f;
+        --ai-bg: #f7f7f8;
+        --border-color: #e5e7eb;
+    }
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    html, body {
+        height: 100%;
+        width: 100%;
+        overflow: hidden;
+    }
+
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        background-color: var(--main-bg);
+    }
+
+    .container-fluid,
+    .row {
+        margin: 0 !important;
+        padding: 0 !important;
+        max-width: none !important;
+        width: 100% !important;
+    }
+
+    .chat-container {
+        display: flex;
+        height: 100vh;
+    }
+
+    /* Sidebar Styles */
+    .sidebar {
+        width: 280px;
+        background-color: var(--sidebar-bg);
+        color: var(--sidebar-text);
+        display: flex;
+        flex-direction: column;
+        border-right: 1px solid var(--border-color);
+        transition: width 0.3s ease;
+    }
+
+    .sidebar-header {
+        padding: 16px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .new-chat-btn {
+        width: 100%;
+        padding: 12px 16px;
+        background-color: transparent;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: var(--sidebar-text);
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+        .new-chat-btn:hover {
+            background-color: var(--sidebar-hover);
+        }
+
+    .chat-history {
+        flex: 1;
+        overflow-y: auto;
+        padding: 8px;
+    }
+
+    .chat-session-item {
+        padding: 12px 16px;
+        margin: 2px 0;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+        .chat-session-item:hover {
+            background-color: var(--sidebar-hover);
+        }
+
+        .chat-session-item.active {
+            background-color: var(--sidebar-hover);
+        }
+
+    .chat-session-title {
+        flex: 1;
+        font-size: 14px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* Main Chat Area */
+    .main-chat {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        background-color: var(--main-bg);
+    }
+
+    .chat-header {
+        padding: 16px 24px;
+        border-bottom: 1px solid var(--border-color);
+        background-color: white;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .chat-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #374151;
+        margin: 0;
+    }
+
+    .chat-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 24px;
+        background: linear-gradient(180deg, #ffffff 0%, #f9fafb 100%);
+    }
+
+    .message-group {
+        margin-bottom: 24px;
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .message-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 14px;
+        flex-shrink: 0;
+    }
+
+    .user-avatar {
+        background-color: var(--user-bg);
+        color: white;
+    }
+
+    .ai-avatar {
+        background-color: #10a37f;
+        color: white;
+    }
+
+    .message-content {
+        flex: 1;
+        max-width: calc(100% - 44px);
+    }
+
+    .message-bubble {
+        padding: 16px 20px;
+        border-radius: 18px;
+        line-height: 1.5;
+        font-size: 15px;
+        word-wrap: break-word;
+    }
+
+    .user-message .message-bubble {
+        background-color: var(--user-bg);
+        color: white;
+        margin-left: auto;
+        max-width: 80%;
+    }
+
+    .ai-message .message-bubble {
+        background-color: var(--ai-bg);
+        color: #374151;
+        border: 1px solid #e5e7eb;
+    }
+
+    .user-message {
+        flex-direction: row-reverse;
+    }
+
+        .user-message .message-content {
+            display: flex;
+            justify-content: flex-end;
+        }
+
+    /* Input Area */
+    .chat-input-container {
+        padding: 24px;
+        background-color: white;
+        border-top: 1px solid var(--border-color);
+    }
+
+    .chat-input-wrapper {
+        max-width: 800px;
+        margin: 0 auto;
+        position: relative;
+    }
+
+    .chat-input {
+        width: 100%;
+        padding: 16px 60px 16px 20px;
+        border: 1px solid var(--border-color);
+        border-radius: 25px;
+        font-size: 15px;
+        resize: none;
+        outline: none;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        transition: all 0.2s ease;
+        font-family: inherit;
+    }
+
+        .chat-input:focus {
+            border-color: var(--user-bg);
+            box-shadow: 0 2px 12px rgba(16, 163, 127, 0.2);
+        }
+
+    .user-account {
+        padding: 12px;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        background-color: #202123;
+        position: sticky;
+        bottom: 0;
+    }
+
+    .send-button {
+        position: absolute;
+        right: 8px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 40px;
+        height: 40px;
+        border: none;
+        background-color: var(--user-bg);
+        color: white;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+    }
+
+        .send-button:hover {
+            background-color: #0d8f6f;
+            transform: translateY(-50%) scale(1.05);
+        }
+
+        .send-button:disabled {
+            background-color: #d1d5db;
+            cursor: not-allowed;
+            transform: translateY(-50%) scale(1);
+        }
+
+    /* Loading animation */
+    .typing-indicator {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        padding: 16px 20px;
+    }
+
+    .typing-dot {
+        width: 8px;
+        height: 8px;
+        background-color: #9ca3af;
+        border-radius: 50%;
+        animation: typing 1.4s infinite;
+    }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+    @@keyframes typing {
+        0%, 60%, 100% {
+            transform: translateY(0);
+        }
+
+        30% {
+            transform: translateY(-10px);
+        }
+    }
+
+    /* Responsive */
+    @@media (max-width: 768px) {
+        .sidebar {
+            width: 100%;
+            position: fixed;
+            left: -100%;
+            z-index: 1000;
+            transition: left 0.3s ease;
+        }
+
+            .sidebar.show {
+                left: 0;
+            }
+
+        .main-chat {
+            width: 100%;
+        }
+
+        .chat-messages {
+            padding: 16px;
+        }
+
+        .message-bubble {
+            padding: 12px 16px;
+            font-size: 14px;
+        }
+    }
+
+    /* Scrollbar styling */
+    .chat-messages::-webkit-scrollbar,
+    .chat-history::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .chat-messages::-webkit-scrollbar-track,
+    .chat-history::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .chat-messages::-webkit-scrollbar-thumb {
+        background-color: rgba(0, 0, 0, 0.2);
+        border-radius: 3px;
+    }
+
+    .chat-history::-webkit-scrollbar-thumb {
+        background-color: rgba(255, 255, 255, 0.3);
+        border-radius: 3px;
+    }
+
+    .empty-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        color: #6b7280;
+        text-align: center;
+    }
+
+        .empty-state i {
+            font-size: 64px;
+            margin-bottom: 16px;
+            color: #d1d5db;
+        }
+</style>
+
+<div class="chat-container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <button class="new-chat-btn" onclick="createNewChat()">
+                <i class="fas fa-plus"></i>
+                Cuộc trò chuyện mới
+            </button>
+        </div>
+        <div class="chat-history" id="chat-history">
+            <!-- Chat sessions will be loaded here -->
+        </div>
+        <div class="user-account">
+                <div class="dropdown w-100">
+                    <button class="btn btn-outline-light dropdown-toggle w-100 d-flex justify-content-between align-items-center"
+                            type="button"
+                            id="userDropdown"
+                            data-bs-toggle="dropdown"
+                            aria-expanded="false">
+                        <i class="fas fa-user-circle me-2"></i>
+                        <span class="text-truncate">@User.Identity.Name</span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-dark w-100 shadow" aria-labelledby="userDropdown">
+                        <li>
+                            <form asp-controller="Home" asp-action="Logout" method="post" class="m-0">
+                                <button type="submit" class="dropdown-item text-danger">
+                                    <i class="fas fa-sign-out-alt me-2"></i>Đăng xuất
+                                </button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
+        </div>
+    </div>
+
+    <!-- Main Chat Area -->
+    <div class="main-chat">
+        <div class="chat-header">
+            <h1 class="chat-title">
+                <i class="fas fa-heartbeat" style="color: #10a37f; margin-right: 8px;"></i>
+                MediQ - HealthCare AI Assistant
+            </h1>
+        </div>
+
+        <div class="chat-messages" id="chat-messages">
+            <div class="empty-state">
+                <i class="fas fa-comments"></i>
+                <h3>Chào mừng đến với MediQ</h3>
+                <p>Bắt đầu cuộc trò chuyện mới hoặc chọn từ lịch sử bên trái</p>
+            </div>
+        </div>
+
+        <div class="chat-input-container">
+            <div class="chat-input-wrapper">
+                <textarea id="message-input"
+                          class="chat-input"
+                          placeholder="Nhập câu hỏi của bạn về sức khỏe..."
+                          rows="1"></textarea>
+                <button id="send-button" class="send-button">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        var currentSessionId = null;
+        var isLoading = false;
+
+        // Auto-resize textarea
+        function autoResize() {
+            const textarea = document.getElementById('message-input');
+            textarea.style.height = 'auto';
+            textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
+        }
+
+        function formatDateTime(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diffTime = Math.abs(now - date);
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+            if (diffDays === 0) {
+                return 'Hôm nay';
+            } else if (diffDays === 1) {
+                return 'Hôm qua';
+            } else if (diffDays < 7) {
+                return diffDays + ' ngày trước';
+            } else {
+                return date.toLocaleDateString('vi-VN');
+            }
+        }
+
+        function loadChatSessions() {
+            $.get("/Home/GetChatSessions", function (data) {
+                var chatHistory = $("#chat-history");
+                chatHistory.empty();
+
+                if (data.length === 0) {
+                    chatHistory.append('<div style="padding: 16px; text-align: center; color: #9ca3af;">Chưa có cuộc trò chuyện nào</div>');
+                    return;
+                }
+
+                $.each(data, function (index, session) {
+                    var sessionItem = $(`
+                        <div class="chat-session-item" data-session-id="${session.sessionId}">
+                            <i class="fas fa-message"></i>
+                            <div class="chat-session-title">
+                                Cuộc trò chuyện ${session.sessionId} - ${formatDateTime(session.startedAt)}
+                            </div>
+                        </div>
+                    `);
+
+                    sessionItem.click(function () {
+                        currentSessionId = $(this).data('sessionId');
+                        loadChatMessages(currentSessionId);
+                        $(".chat-session-item").removeClass("active");
+                        $(this).addClass("active");
+                    });
+
+                    chatHistory.append(sessionItem);
+                });
+
+                if (data.length > 0) {
+                    // Automatically load the latest session
+                    chatHistory.find('.chat-session-item').first().click();
+                }
+            }).fail(function() {
+                console.error("Error loading chat sessions");
+            });
+        }
+
+        function loadChatMessages(sessionId) {
+            $.get("/Home/GetChatMessages?sessionId=" + sessionId, function (data) {
+                var chatMessages = $("#chat-messages");
+                chatMessages.empty();
+
+                if (data.length === 0) {
+                    chatMessages.html(`
+                        <div class="empty-state">
+                            <i class="fas fa-comments"></i>
+                            <h3>Cuộc trò chuyện trống</h3>
+                            <p>Bắt đầu cuộc trò chuyện bằng cách nhập tin nhắn bên dưới</p>
+                        </div>
+                    `);
+                    return;
+                }
+
+                $.each(data, function (index, message) {
+                    appendMessage(message.sender, message.messageText, false);
+                });
+
+                scrollToBottom();
+            }).fail(function() {
+                console.error("Error loading chat messages");
+            });
+        }
+
+        function appendMessage(sender, text, animate = true) {
+            const chatMessages = $("#chat-messages");
+
+            // Remove empty state if exists
+            $(".empty-state").remove();
+
+            const isUser = sender === "User";
+            const avatarIcon = isUser ? "U" : "AI";
+            const messageClass = isUser ? "user-message" : "ai-message";
+            const avatarClass = isUser ? "user-avatar" : "ai-avatar";
+
+            const messageHTML = `
+                <div class="message-group ${messageClass}" ${animate ? 'style="opacity: 0; transform: translateY(20px);"' : ''}>
+                    <div class="message-avatar ${avatarClass}">
+                        ${avatarIcon}
+                    </div>
+                    <div class="message-content">
+                        <div class="message-bubble">
+                            ${text.replace(/\n/g, '<br>')}
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            chatMessages.append(messageHTML);
+
+            if (animate) {
+                // Animate message in
+                const newMessage = chatMessages.find('.message-group').last();
+                setTimeout(() => {
+                    newMessage.css({
+                        'opacity': '1',
+                        'transform': 'translateY(0)',
+                        'transition': 'all 0.3s ease'
+                    });
+                }, 50);
+            }
+        }
+
+        function showTypingIndicator() {
+            const typingHTML = `
+                <div class="message-group ai-message typing-message">
+                    <div class="message-avatar ai-avatar">
+                        AI
+                    </div>
+                    <div class="message-content">
+                        <div class="message-bubble">
+                            <div class="typing-indicator">
+                                <div class="typing-dot"></div>
+                                <div class="typing-dot"></div>
+                                <div class="typing-dot"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            $("#chat-messages").append(typingHTML);
+            scrollToBottom();
+        }
+
+        function removeTypingIndicator() {
+            $(".typing-message").remove();
+        }
+
+        function scrollToBottom() {
+            const chatMessages = document.getElementById('chat-messages');
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function createNewChat() {
+            // Create new session
+            $.post("/Home/CreateChatSession", function (session) {
+                currentSessionId = session.sessionId;
+
+                // Clear messages
+                $("#chat-messages").html(`
+                    <div class="empty-state">
+                        <i class="fas fa-comments"></i>
+                        <h3>Cuộc trò chuyện mới</h3>
+                        <p>Hỏi tôi bất kỳ điều gì về sức khỏe</p>
+                    </div>
+                `);
+
+                // Reload sessions and mark new one as active
+                loadChatSessions();
+
+                // Focus input
+                $("#message-input").focus();
+            }).fail(function () {
+                alert("Lỗi khi tạo cuộc trò chuyện mới.");
+            });
+        }
+
+        function sendMessage() {
+            if (isLoading) return;
+
+            var messageText = $("#message-input").val().trim();
+            if (messageText === "") return;
+
+            // Clear input
+            $("#message-input").val("");
+            autoResize();
+
+            // Set loading state
+            isLoading = true;
+            $("#send-button").prop('disabled', true);
+
+            if (currentSessionId === null) {
+                // Create new session if no session is active
+                $.post("/Home/CreateChatSession", function (session) {
+                    currentSessionId = session.sessionId;
+                    loadChatSessions(); // Reload sessions to show the new one
+                    sendActualMessage(messageText);
+                }).fail(function () {
+                    alert("Lỗi khi tạo phiên trò chuyện.");
+                    isLoading = false;
+                    $("#send-button").prop('disabled', false);
+                });
+            } else {
+                sendActualMessage(messageText);
+            }
+        }
+
+        function sendActualMessage(messageText) {
+            var messageData = {
+                sessionId: currentSessionId,
+                sender: "User",
+                messageText: messageText
+            };
+
+
+        $.ajax({
+            url: "/Home/SendMessage",
+            type: "POST",
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify(messageData),
+            success: function (response) {
+                // Append user message vào chat window
+                appendMessage("User", messageText, true);
+                scrollToBottom();
+
+                // Hiển thị typing indicator
+                showTypingIndicator();
+
+                // Sau khi lưu tin nhắn của user thành công -> Gọi API AI
+                $.ajax({
+                    url: "http://127.0.0.1:8000/generate",
+                    type: "POST",
+                    contentType: "application/json; charset=utf-8",
+                    data: JSON.stringify({ text: messageText }),
+                    success: function (aiResponse) {
+                        // Ẩn typing indicator
+                        removeTypingIndicator();
+
+                        // Append AI message
+                        appendMessage("AI", aiResponse.response, true);
+                        scrollToBottom();
+
+                        // Lưu phản hồi AI vào database
+                        var aiMessageData = {
+                            sessionId: currentSessionId,
+                            sender: "AI",
+                            messageText: aiResponse.response
+                        };
+
+                        $.ajax({
+                            url: "/Home/SendMessage",
+                            type: "POST",
+                            contentType: "application/json; charset=utf-8",
+                            data: JSON.stringify(aiMessageData),
+                            success: function () {
+                                console.log("AI message saved successfully.");
+                            },
+                            error: function (xhr) {
+                                console.error("Error saving AI message:", xhr.responseText);
+                            }
+                        });
+                    },
+                    error: function (jqXHR) {
+                        removeTypingIndicator();
+                        appendMessage("AI", "Xin lỗi, đã xảy ra lỗi khi xử lý yêu cầu của bạn.", true);
+                        console.error("Error getting AI response:", jqXHR.responseText);
+                    },
+                    complete: function () {
+                        isLoading = false;
+                        $("#send-button").prop("disabled", false);
+                    }
+                });
+            },
+            error: function (xhr) {
+                console.error("Error sending user message:", xhr.responseText);
+                alert("Lỗi khi gửi tin nhắn: " + xhr.responseText);
+                isLoading = false;
+                $("#send-button").prop("disabled", false);
+            }
+        });
+
+        }
+
+        $(document).ready(function () {
+            loadChatSessions();
+
+            $("#send-button").click(function () {
+                sendMessage();
+            });
+
+            $("#message-input").on('input', autoResize);
+
+            $("#message-input").keydown(function (e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+
+            // Focus input on load
+            $("#message-input").focus();
+        });
+    </script>
+}
